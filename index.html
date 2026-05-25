@@ -244,10 +244,21 @@
     /* ── RESPONSIVE ── */
     @media(max-width:640px){
       .cia-row{grid-template-columns:1fr}
-      .demo-wrap{grid-template-columns:1fr}
       .golpe-row{grid-template-columns:1fr}
-      .demo-preview{display:none}
-      nav{padding:.6rem 1rem}
+
+      /* Nav: marca em cima, links rolam na horizontal sem quebrar linha */
+      nav{flex-direction:column;align-items:flex-start;padding:.55rem 1rem;gap:.3rem}
+      .nav-brand{font-size:.8rem}
+      .nav-links{
+        overflow-x:auto;flex-wrap:nowrap;width:100%;
+        gap:.9rem;padding-bottom:.15rem;
+        -webkit-overflow-scrolling:touch;scrollbar-width:none}
+      .nav-links::-webkit-scrollbar{display:none}
+      .nav-links a{font-size:.75rem;white-space:nowrap}
+
+      /* Demo: empilha verticalmente, preview aparece abaixo do botão */
+      .demo-wrap{grid-template-columns:1fr;gap:1.5rem}
+      .demo-preview{display:block}
     }
   </style>
 </head>
@@ -255,7 +266,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-brand">Segurança da Informação</div>
+  <div class="nav-brand">&#x1F512; Segurança da Informação</div>
   <div class="nav-links">
     <a href="#conceito">Conceito</a>
     <a href="#golpes">Golpes</a>
@@ -445,7 +456,7 @@
     <div class="demo-wrap">
       <div class="demo-text reveal">
         <h2>Como um <span class="accent">ataque de phishing</span> se parece</h2>
-        <p>A página ao lado imita um site bancário real. A diferença está na URL — e na maioria das vezes as pessoas não percebem.<br><br>Clique no botão abaixo para ver o que acontece quando uma vítima cai no golpe.</p>
+        <p>A página abaixo imita um site bancário real. A diferença está na URL — e na maioria das vezes as pessoas não percebem.<br><br>Tente "acessar" a conta e veja o que acontece.</p>
         <button class="btn-demo" onclick="openModal()">⚡ Ver a armadilha em ação</button>
       </div>
       <div class="demo-preview reveal">
@@ -458,9 +469,9 @@
         <div class="dp-body">
           <div class="dp-logo">[ Banco Brasil ]</div>
           <p>Entre com suas credenciais para continuar</p>
-          <input class="dp-input" type="text" placeholder="CPF ou CNPJ" readonly/>
-          <input class="dp-input" type="password" placeholder="Senha" readonly/>
-          <button class="dp-btn" onclick="openModal()">Acessar minha conta</button>
+          <input class="dp-input" id="dp-cpf" type="text" placeholder="CPF ou CNPJ" autocomplete="off"/>
+          <input class="dp-input" id="dp-senha" type="password" placeholder="Senha" autocomplete="off"/>
+          <button class="dp-btn" onclick="tryLogin()">Acessar minha conta</button>
           <div class="dp-warning" id="dp-warn">
             ⚠ Seus dados foram capturados!
           </div>
@@ -608,7 +619,7 @@
 <div class="divider"></div>
 
 <footer>
-  <div class="flogo">Segurança da Informação</div>
+  <div class="flogo">&#x1F512; Segurança da Informação</div>
   <p>Material educativo para apresentação escolar</p>
 </footer>
 
@@ -650,14 +661,34 @@ function updateCounter(){
 updateCounter();
 
 // ── PHISHING MODAL ──
+function tryLogin(){
+  const cpf = document.getElementById('dp-cpf').value.trim();
+  const pwd = document.getElementById('dp-senha').value.trim();
+  if(!cpf && !pwd){
+    // nenhum campo preenchido — shake visual
+    const form = document.querySelector('.demo-preview');
+    form.style.animation='none';
+    form.style.transform='translateX(6px)';
+    setTimeout(()=>{form.style.transform='translateX(-6px)'},80);
+    setTimeout(()=>{form.style.transform='translateX(4px)'},160);
+    setTimeout(()=>{form.style.transform='translateX(0)'},240);
+    document.getElementById('dp-cpf').focus();
+    return;
+  }
+  document.getElementById('dp-warn').style.display='block';
+  openModal();
+}
 function openModal(){
   document.getElementById('modal').classList.add('show');
-  document.getElementById('dp-warn').style.display='block';
   document.body.style.overflow='hidden';
 }
 function closeModal(){
   document.getElementById('modal').classList.remove('show');
   document.body.style.overflow='';
+  // limpa os campos após fechar
+  document.getElementById('dp-cpf').value='';
+  document.getElementById('dp-senha').value='';
+  document.getElementById('dp-warn').style.display='none';
 }
 document.getElementById('modal').addEventListener('click',function(e){
   if(e.target===this)closeModal();
